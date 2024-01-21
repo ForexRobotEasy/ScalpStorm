@@ -1,0 +1,78 @@
+
+//+------------------------------------------------------------------+
+//|                                               ScalpStorm        |
+//|                                    Developer: forexroboteasy.com |
+//|                                  Development: Forex Robot Easy Team|
+//+------------------------------------------------------------------+
+
+//--- Input parameters
+input int StopLossPips = 2; // Stop loss in pips
+
+//--- Global variables
+int ticket = 0; // Order ticket
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   //--- Set stop loss level
+   double stopLossLevel = NormalizeDouble(Bid - StopLossPips * Point, Digits);
+
+   //--- Place order
+   ticket = OrderSend(Symbol(), OP_BUY, 0.01, Ask, 0, stopLossLevel, 0, 'ScalpStorm', 0, 0, clrGreen);
+
+   //--- Check order placement
+   if (ticket > 0)
+   {
+      Comment('Order placed successfully');
+   }
+   else
+   {
+      Comment('Failed to place order. Error code:', GetLastError());
+   }
+
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   //--- Check if order is in profit zone
+   if (OrderProfitCheck(ticket))
+   {
+      //--- Perform actions in profit zone
+      Comment('Order in profit zone');
+
+      //--- Close order
+      if (OrderClose(ticket, OrderLots(), Bid, 0, clrGreen))
+      {
+         Comment('Order closed successfully');
+      }
+      else
+      {
+         Comment('Failed to close order. Error code:', GetLastError());
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Check if order is in profit zone                                 |
+//+------------------------------------------------------------------+
+bool OrderProfitCheck(int orderTicket)
+{
+   //--- Get order profit
+   double profit = OrderProfit();
+
+   //--- Check if order is in profit zone
+   if (profit > 0)
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
